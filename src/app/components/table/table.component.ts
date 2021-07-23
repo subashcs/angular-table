@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { Element, ElementType, MainService } from 'src/app/services/main.service';
 
 @Component({
@@ -8,12 +8,13 @@ import { Element, ElementType, MainService } from 'src/app/services/main.service
 })
 export class TableComponent implements OnInit {
   @Input()
-  public set elements(elements: Array<Element>) {
+  public set elements(elements: Array<Element> | undefined) {
     /** We want to show same type elements in same column */
-    elements.forEach((element) => {
-      element.type = element.type.split('@').shift();
-      this.elementTypeMap[element.type] ? this.elementTypeMap[element.type].push(element) : (this.elementTypeMap[element.type] = [element]);
-    });
+   elements.forEach((element) => {
+      /**  Here was the error @subash due to which a japanese elementType haiku@japan was not visible */
+      let elementType = element.type.split('@').shift();
+      this.elementTypeMap[elementType] ? this.elementTypeMap[elementType].push(element) : (this.elementTypeMap[elementType] = [element]);
+    })
     Object.keys(this.elementTypeMap).forEach((type) => (this.elementCountPerType[type] = this.elementTypeMap[type].length));
   }
 
@@ -29,7 +30,7 @@ export class TableComponent implements OnInit {
 
   ngOnInit() {
     (async () => {
-      await (
+       (
         await this.mainService.getAllElementTypes().toPromise()
       ).forEach((type) => {
         const _ =
